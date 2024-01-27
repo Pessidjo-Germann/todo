@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:todolist/model/functionApi.dart';
+import 'package:todolist/screens/todoScreen/components/tache_widget.dart';
 
 import '../../../model/todo.dart';
 
@@ -10,12 +12,18 @@ class Body extends StatefulWidget {
 }
 
 class _BodyState extends State<Body> {
-  bool isClick = true;
   String val = '';
   TextEditingController todo = TextEditingController();
   List<Todo> maListe = [];
 
   int i = 0;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    maListe = receiveTodo() as List<Todo>;
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -43,10 +51,12 @@ class _BodyState extends State<Body> {
                   setState(() {
                     val = s;
                     todo.text = '';
-                    Todo todos = Todo(s, i);
+                    Todo todos = Todo(s, i, true);
 
                     maListe.add(todos);
                     i++;
+                    postTodo(
+                        maListe); //envoie de la liste apres ajout d'une todo;
                   });
                   debugPrint(todo.text);
                 },
@@ -84,70 +94,17 @@ class _BodyState extends State<Body> {
                           Todo currentTodo = maListe[index];
                           setState(() {
                             maListe.remove(currentTodo);
+                            postTodo(
+                                maListe); //envoie de la liste apres suppression;
                           });
                         },
                         child: TacheWidget(
-                          text: maListe[index].name,
+                          todo: maListe[index],
                         ),
                       )),
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class TacheWidget extends StatefulWidget {
-  TacheWidget({super.key, required this.text});
-  String text = '';
-
-  @override
-  State<TacheWidget> createState() => _TacheWidgetState();
-}
-
-class _TacheWidgetState extends State<TacheWidget> {
-  late bool isClick = true;
-
-  TextStyle boldStyle = const TextStyle(
-    fontWeight: FontWeight.w500,
-    fontSize: 20,
-    decoration: TextDecoration.none,
-  );
-
-  TextStyle todoDo = const TextStyle(
-    fontWeight: FontWeight.w100,
-    fontSize: 17,
-    decoration: TextDecoration.lineThrough,
-  );
-  @override
-  Widget build(BuildContext context) {
-    return addTach(context);
-  }
-
-  InkWell addTach(BuildContext context) {
-    return InkWell(
-      onTap: () {
-        setState(() {
-          isClick = !isClick;
-          if (isClick == false) {
-            debugPrint("germann");
-          }
-        });
-      },
-      child: Container(
-        height: 50,
-        width: MediaQuery.of(context).size.width,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border.all(width: 0.2),
-        ),
-        child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              widget.text,
-              style: isClick ? boldStyle : todoDo,
-            )),
       ),
     );
   }
