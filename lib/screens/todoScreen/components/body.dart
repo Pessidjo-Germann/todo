@@ -1,3 +1,4 @@
+//body.dart
 import 'package:flutter/material.dart';
 import 'package:todolist/model/functionApi.dart';
 import 'package:todolist/screens/todoScreen/components/tache_widget.dart';
@@ -8,20 +9,27 @@ class Body extends StatefulWidget {
   const Body({super.key});
 
   @override
-  State<Body> createState() => _BodyState();
+  State<Body> createState() => _BodyState();  
 }
 
 class _BodyState extends State<Body> {
   String val = '';
   TextEditingController todo = TextEditingController();
-  List<Todo> maListe = [];
+  List<Todo> maListe  =  [];
 
   int i = 0;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    maListe = receiveTodo() as List<Todo>;
+    loadTodos();
+  }
+
+   void loadTodos() async {
+    List<Todo> todosList = await receiveTodo();
+    setState(() {
+      maListe = todosList;
+    });
   }
 
   @override
@@ -52,17 +60,16 @@ class _BodyState extends State<Body> {
                     val = s;
                     todo.text = '';
                     Todo todos = Todo(s, i, true);
-
                     maListe.add(todos);
                     i++;
-                    postTodo(
-                        maListe); //envoie de la liste apres ajout d'une todo;
+
+                    postTodo(maListe); //envoie de la liste apres ajout d'une todo;
                   });
                   debugPrint(todo.text);
                 },
                 decoration: const InputDecoration(
                   labelText: "Enter your todos",
-                  hintText: "Entrer your todos",
+                  hintText: "Task 1: do something",
                   contentPadding: EdgeInsets.only(left: 20, bottom: 35),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.all(Radius.circular(10)),
@@ -78,15 +85,6 @@ class _BodyState extends State<Body> {
                             color: Colors.deepPurpleAccent,
                           ),
                           width: MediaQuery.of(context).size.width,
-                          child: const Text(
-                            "Effacer la tache ?",
-                            textAlign: TextAlign.left,
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontFamily: 'Arial',
-                              color: Colors.white,
-                            ),
-                          ),
                         ),
                         direction: DismissDirection.startToEnd,
                         key: Key(maListe[index].id.toString()),
@@ -102,6 +100,8 @@ class _BodyState extends State<Body> {
                           todo: maListe[index],
                         ),
                       )),
+                // make index removable onSecondaryTap 
+
             ],
           ),
         ),
