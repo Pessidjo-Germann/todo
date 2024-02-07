@@ -1,6 +1,5 @@
-
+import 'dart:ui';
 import 'package:flutter/material.dart';
-
 import '../../../model/todo.dart';
 
 // ignore: must_be_immutable
@@ -19,11 +18,14 @@ class _TacheWidgetState extends State<TacheWidget> {
     decoration: TextDecoration.none,
   );
 
+  // cette fonction permet de rayer le texte mais son nom n'est pas bien choisi
+  //il faudrait le changer en un nom plus explicite
   TextStyle todoDo = const TextStyle(
     fontWeight: FontWeight.w100,
     fontSize: 17,
     decoration: TextDecoration.lineThrough,
   );
+ 
   @override
   Widget build(BuildContext context) {
     return addTach(context);
@@ -33,8 +35,13 @@ class _TacheWidgetState extends State<TacheWidget> {
     return InkWell(
       onTap: () {
         setState(() {
+          debugPrint(widget.todo.isClick.toString());
           widget.todo.isClick = !widget.todo.isClick;
         });
+      },
+      onSecondaryTap: () {
+        Todo todo = widget.todo;
+        // delete instance of todo
       },
       child: Container(
         height: 50,

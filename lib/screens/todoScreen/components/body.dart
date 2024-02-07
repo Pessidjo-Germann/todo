@@ -1,3 +1,4 @@
+//body.dart
 import 'package:flutter/material.dart';
 import 'package:todolist/model/functionApi.dart';
 import 'package:todolist/screens/todoScreen/components/tache_widget.dart';
@@ -16,12 +17,24 @@ class _BodyState extends State<Body> {
   TextEditingController todo = TextEditingController();
   List<Todo> maListe = [];
 
-  int i = 0;
+  int i = 2;
+  Todo? currentTodo; // Déclarer currentTodo en dehors du setState
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    maListe = receiveTodo() as List<Todo>;
+    loadTodos();
+  }
+
+  void loadTodos() async {
+    try {
+      List<Todo> todosList = await receiveTodo(); //la methode get todo
+      setState(() {
+        maListe = todosList;
+      });
+    } catch (e) {
+      debugPrint("Error loading todos: $e");
+    }
   }
 
   @override
@@ -47,22 +60,36 @@ class _BodyState extends State<Body> {
                 controller: todo,
                 // onEditingComplete: () {},
                 keyboardType: TextInputType.text,
-                onSubmitted: (String s) {
+                onSubmitted: (String s) async {
                   setState(() {
                     val = s;
                     todo.text = '';
-                    Todo todos = Todo(s, i, true);
-
-                    maListe.add(todos);
+                    currentTodo = Todo(
+                      name: s,
+                      id: i,
+                      isClick: true,
+                    );
+                    maListe.add(currentTodo!); // Utilisation de currentTodo ici
                     i++;
-                    postTodo(
-                        maListe); //envoie de la liste apres ajout d'une todo;
                   });
-                  debugPrint(todo.text);
+                  try {
+                    if (currentTodo != null) {
+                      await postTodo(
+                          currentTodo!); // Utilisation de currentTodo ici
+                    }
+                  } catch (e) {
+                    debugPrint("Error adding todo: $e");
+                    setState(() {
+                      if (currentTodo != null) {
+                        maListe.remove(
+                            currentTodo!); // Utilisation de currentTodo ici
+                      }
+                    });
+                  }
                 },
                 decoration: const InputDecoration(
                   labelText: "Enter your todos",
-                  hintText: "Entrer your todos",
+                  hintText: "Task 1: do something",
                   contentPadding: EdgeInsets.only(left: 20, bottom: 35),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.all(Radius.circular(10)),
@@ -78,30 +105,28 @@ class _BodyState extends State<Body> {
                             color: Colors.deepPurpleAccent,
                           ),
                           width: MediaQuery.of(context).size.width,
-                          child: const Text(
-                            "Effacer la tache ?",
-                            textAlign: TextAlign.left,
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontFamily: 'Arial',
-                              color: Colors.white,
-                            ),
-                          ),
                         ),
                         direction: DismissDirection.startToEnd,
                         key: Key(maListe[index].id.toString()),
-                        onDismissed: (direction) {
+                        onDismissed: (direction) async {
                           Todo currentTodo = maListe[index];
                           setState(() {
                             maListe.remove(currentTodo);
-                            postTodo(
-                                maListe); //envoie de la liste apres suppression;
                           });
+                          try {
+                            await deleteTodo(currentTodo.id); //le delete
+                          } catch (e) {
+                            debugPrint("Error deleting todo: $e");
+                            setState(() {
+                              maListe.insert(index, currentTodo);
+                            });
+                          }
                         },
                         child: TacheWidget(
                           todo: maListe[index],
                         ),
                       )),
+              // make index removable onSecondaryTap
             ],
           ),
         ),
